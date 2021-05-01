@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>650</width>
+    <height>400</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>650</width>
+    <height>400</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>650</width>
+    <height>400</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Willkommen</string>
+  </property>
+  <property name="locale">
+   <locale language="German" country="Germany"/>
+  </property>
+  <widget class="QPushButton" name="start_study_btn">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>300</y>
+     <width>84</width>
+     <height>34</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgb(91, 208, 1);</string>
+   </property>
+   <property name="text">
+    <string>Starten</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="initial_explanation">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>20</y>
+     <width>596</width>
+     <height>246</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Danke, dass du an dieser kleinen Studie teilnimmst! Deine Aufgabe ist es, auf einen gegebenen&lt;/p&gt;&lt;p&gt;Stimulus (z.B. das Ändern der Hintergrundfarbe dieses Fensters) so schnell wie möglich durch&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;einmaliges Klicken der Leertaste&lt;/span&gt; zu reagieren. Deine genaue Aufgabe pro Durchgang wird dir &lt;/p&gt;&lt;p&gt;immer oben angezeigt. Bitte verwende dieselbe Hand für alle Aufgaben (insgesamt 20).&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;Bitte achte darauf, während der Dauer dieses Experiments ungestört und konzentriert zu bleiben.&lt;/p&gt;&lt;p&gt;Die Studie wird insgesamt ca. 10 Minuten dauern.&lt;/p&gt;&lt;p&gt;Sobald du bereit bist, drücke bitte auf den &amp;quot;Starten&amp;quot;-Button.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
