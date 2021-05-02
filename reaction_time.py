@@ -59,12 +59,12 @@ def _wait(time: int):
 
 class ReactionTimeStudy(QtWidgets.QWidget):
     __TASKS = {
-        "A": "Klicke die Leertaste so schnell wie möglich, sobald sich der weiße Hintergrund des Bildschirms ändert.",
+        "A": "Klicke die Leertaste so schnell wie möglich, sobald sich die Hintergrundfarbe des Bildschirms ändert.",
         "B": "Klicke die Leertaste so schnell wie möglich, wenn sich der Bildschirm-Hintergrund blau verfärbt."
     }
 
     __MAX_TRIALS = 20
-    __COUNTDOWN_DURATION = 2  # seconds  # TODO reset to 10 seconds after testing!
+    __COUNTDOWN_DURATION = 10  # seconds
     __PAUSE_DURATION = 60  # one minute pause
 
     def __init__(self):
@@ -180,8 +180,14 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         QTimer.singleShot(timeout, lambda: self.setStyleSheet("background-color: orange;"))
 
     def _init_condition_B(self):
-        # TODO stop this loop if space pressed!
+        self._finish_loop = False
         while True:
+            # stop this loop if space is pressed before blue appeared otherwise it will run infinitely!
+            if self._finish_loop is True:
+                self.setStyleSheet(f"background-color: white;")
+                self._finish_loop = False  # reset so we can run this loop again
+                break
+
             _wait(1)  # wait one second between
             color = get_random_color()
             self.setStyleSheet(f"background-color: {color};")
@@ -194,6 +200,10 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             if not self.stackedLayout.currentWidget() is self.secondPage:
                 # if key pressed on the wrong page, do nothing
                 return
+
+            if self._get_current_condition() == "B":
+                # we pressed space during the infinite loop; kill it in case the user clicked too early
+                self._finish_loop = True
 
             self.setStyleSheet(f"background-color: white;")  # reset the window background color
             self._current_trial += 1
@@ -209,7 +219,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                 self._go_to_next_page()
                 return
 
-            # sleep(1)
             self._update_ui()
             self._start_task()
             # self.update()  # this triggers an async repaint of the widget (paintEvent() is called)
@@ -220,7 +229,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
     def _save_answers(self):
         # TODO connect to ui elements and log answers to file
-        #  -> validate before? or just allow all of them to be optional
+        #  -> validate before? or just allow all of them to be optional?
         self.close()
 
 
