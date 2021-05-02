@@ -49,6 +49,14 @@ def get_random_color() -> str:
     return random.choice(random_colors)
 
 
+# make the pyqt event loop wait for the given time without freezing everything (as with sleep(...)),
+# see https://stackoverflow.com/a/48039398
+def _wait(time: int):
+    loop = QEventLoop()
+    QTimer.singleShot(time * 1000, loop.quit)
+    loop.exec_()
+
+
 class ReactionTimeStudy(QtWidgets.QWidget):
     __TASKS = {
         "A": "Klicke die Leertaste so schnell wie möglich, sobald sich der weiße Hintergrund des Bildschirms ändert.",
@@ -101,7 +109,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         elif self.stackedLayout.currentWidget() is self.thirdPage:
             self._setup_questionnaire()
 
-    # TODO: debug function; delete this later!
+    # TODO: debug function to skip to questionnaire immediately; delete this later!
     def _debug_show_questionnaire(self):
         self.stackedLayout.setCurrentIndex(2)
         self._setup_questionnaire()
@@ -174,8 +182,9 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     def _init_condition_B(self):
         # TODO stop this loop if space pressed!
         while True:
+            _wait(1)  # wait one second between
             color = get_random_color()
-            QTimer.singleShot(1000, lambda: self.setStyleSheet(f"background-color: {color};"))
+            self.setStyleSheet(f"background-color: {color};")
             if color == "blue":
                 break
 
@@ -189,16 +198,12 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self.setStyleSheet(f"background-color: white;")  # reset the window background color
             self._current_trial += 1
             # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
-            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS/5:
+            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS/2:
                 self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
                                                  "in einer Minute geht es weiter!")
 
-                # make the pyqt event loop wait for the given time without freezing everything (as with sleep(...)),
-                # see https://stackoverflow.com/a/48039398
-                # TODO unfortunately pressing space, simply skips this :(
-                loop = QEventLoop()
-                QTimer.singleShot(ReactionTimeStudy.__PAUSE_DURATION * 1000, loop.quit)
-                loop.exec_()
+                # TODO unfortunately pressing space, simply skips this and the next trial :(
+                _wait(ReactionTimeStudy.__PAUSE_DURATION * 1000)
             elif self._current_trial == 20:
                 # show questionnaire after 20 trials
                 self._go_to_next_page()
