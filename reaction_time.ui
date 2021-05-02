@@ -50,7 +50,7 @@
     </size>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>0</number>
    </property>
    <widget class="QWidget" name="intro">
     <property name="minimumSize">
@@ -94,6 +94,22 @@
       <string>Starten</string>
      </property>
     </widget>
+    <widget class="QPushButton" name="debug_btn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>360</y>
+       <width>88</width>
+       <height>34</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">background-color: rgb(91, 208, 1);</string>
+     </property>
+     <property name="text">
+      <string>Debug-Btn</string>
+     </property>
+    </widget>
    </widget>
    <widget class="QWidget" name="study">
     <property name="minimumSize">
@@ -131,7 +147,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:12pt; font-weight:600; color:#da0000;&quot;&gt;10&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string/>
      </property>
     </widget>
     <widget class="QLabel" name="trials_overall_number">
@@ -155,6 +171,11 @@
        <width>561</width>
        <height>91</height>
       </rect>
+     </property>
+     <property name="font">
+      <font>
+       <pointsize>12</pointsize>
+      </font>
      </property>
      <property name="text">
       <string/>
@@ -194,6 +215,18 @@
     </widget>
    </widget>
    <widget class="QWidget" name="questionnaire">
+    <property name="minimumSize">
+     <size>
+      <width>618</width>
+      <height>710</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>610</width>
+      <height>710</height>
+     </size>
+    </property>
     <widget class="QLabel" name="hand_label">
      <property name="geometry">
       <rect>
@@ -265,7 +298,7 @@
       </rect>
      </property>
      <property name="cursor">
-      <cursorShape>OpenHandCursor</cursorShape>
+      <cursorShape>ArrowCursor</cursorShape>
      </property>
      <property name="minimum">
       <number>1</number>
@@ -460,16 +493,16 @@
       </rect>
      </property>
      <property name="currentText">
-      <string>Ja</string>
+      <string>Nein</string>
      </property>
      <item>
       <property name="text">
-       <string>Ja</string>
+       <string>Nein</string>
       </property>
      </item>
      <item>
       <property name="text">
-       <string>Nein</string>
+       <string>Ja</string>
       </property>
      </item>
     </widget>

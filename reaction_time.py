@@ -5,6 +5,7 @@
 import sys
 from time import sleep
 from PyQt5 import QtWidgets, QtCore, uic
+from PyQt5.QtCore import QTimer, QEventLoop
 from PyQt5.QtWidgets import QStackedLayout
 import pandas as pd
 import random
@@ -35,9 +36,9 @@ def get_random_time() -> int:
     """
     Generates a random number between 1 and 6 (inclusive) representing the number of seconds until the stimulus
     is shown. Used to randomize the time until the background color changes.
-    @return: integer between 1 and 6
+    @return: the time in milliseconds (between 1000 and 6000)
     """
-    return random.randint(1, 6)
+    return random.randint(1, 6) * 1000
 
 
 def get_random_color() -> str:
@@ -55,7 +56,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     }
 
     __MAX_TRIALS = 20
-    __COUNTDOWN_DURATION = 3  # seconds  # TODO reset to 10 seconds after testing!
+    __COUNTDOWN_DURATION = 2  # seconds  # TODO reset to 10 seconds after testing!
     __PAUSE_DURATION = 60  # one minute pause
 
     def __init__(self):
@@ -72,6 +73,9 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             # get the passed command line arguments
             self._participant_id = int(sys.argv[1])
             self._current_trial_order = get_trial_order(self._participant_id)
+
+            # TODO delete me later:
+            self.ui.debug_btn.clicked.connect(self._debug_show_questionnaire)
 
             self.ui.start_study_btn.clicked.connect(self._go_to_next_page)
             self.ui.start_study_btn.setFocusPolicy(QtCore.Qt.NoFocus)  # prevent auto-focus of the start button
@@ -97,6 +101,11 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         elif self.stackedLayout.currentWidget() is self.thirdPage:
             self._setup_questionnaire()
 
+    # TODO: debug function; delete this later!
+    def _debug_show_questionnaire(self):
+        self.stackedLayout.setCurrentIndex(2)
+        self._setup_questionnaire()
+
     def _setup_study(self):
         self.ui.setFixedSize(650, 400)
         self.timer = QtCore.QTimer(self)  # init a qt Timer to show a countdown before every trial
@@ -109,7 +118,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         current_condition = self._get_current_condition()
         current_task = ReactionTimeStudy.__TASKS[current_condition]
         self.ui.task_description.setText(current_task)
-        self.ui.trial_number.setText(str(self._current_trial))
+        self.ui.trial_number.setText(str(self._current_trial + 1))  # +1 so the first task is shown as 1 (instead of 0)
 
     def _start_task(self):
         self.ui.countdown_label.show()
@@ -124,6 +133,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.time_remaining -= 1
 
         if self.time_remaining == 0:
+            self._show_remaining_time()
+
             # reset counters
             self.time_remaining = ReactionTimeStudy.__COUNTDOWN_DURATION
             self.ui.countdown_label.hide()
@@ -134,13 +145,12 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
             # TODO log start after countdown finished
 
-            # start current trial
+            # start current trial based on condition
             condition = self._get_current_condition()
-            self._init_condition_A()
-            # if condition == "A":
-            #     self._init_condition_A()
-            # else:
-            #     self._init_condition_B()
+            if condition == "A":
+                self._init_condition_A()
+            else:
+                self._init_condition_B()
         else:
             self._show_remaining_time()
 
@@ -150,19 +160,22 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.ui.countdown_num.setText(str(self.time_remaining))
 
     def _get_current_condition(self) -> str:
-        return self._current_trial_order[self._current_trial]
+        try:
+            return self._current_trial_order[self._current_trial]
+        except IndexError as ie:
+            print(f"Tried to get current condition with a wrong index: \n{ie}")
 
+    # TODO pressing space too early makes some problems at the moment (skips some trials)
     def _init_condition_A(self):
         timeout = get_random_time()
-        sleep(timeout)  # wait until changing the background color for a random time to make it less predictable
-        self.setStyleSheet("background-color: orange;")  # change window background color
+        # wait until changing the background color for a random time to make it less predictable
+        QTimer.singleShot(timeout, lambda: self.setStyleSheet("background-color: orange;"))
 
     def _init_condition_B(self):
         # TODO stop this loop if space pressed!
         while True:
-            sleep(1)
             color = get_random_color()
-            self.setStyleSheet(f"background-color: {color};")
+            QTimer.singleShot(1000, lambda: self.setStyleSheet(f"background-color: {color};"))
             if color == "blue":
                 break
 
@@ -176,23 +189,25 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self.setStyleSheet(f"background-color: white;")  # reset the window background color
             self._current_trial += 1
             # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
-            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS/2 + 1:
-                self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus,"
+            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS/5:
+                self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
                                                  "in einer Minute geht es weiter!")
-                sleep(ReactionTimeStudy.__PAUSE_DURATION)
-            elif self._current_trial == 21:
+
+                # make the pyqt event loop wait for the given time without freezing everything (as with sleep(...)),
+                # see https://stackoverflow.com/a/48039398
+                # TODO unfortunately pressing space, simply skips this :(
+                loop = QEventLoop()
+                QTimer.singleShot(ReactionTimeStudy.__PAUSE_DURATION * 1000, loop.quit)
+                loop.exec_()
+            elif self._current_trial == 20:
                 # show questionnaire after 20 trials
                 self._go_to_next_page()
                 return
 
-            sleep(1)
+            # sleep(1)
             self._update_ui()
             self._start_task()
             # self.update()  # this triggers an async repaint of the widget (paintEvent() is called)
-
-        # elif ev.text() == "h":
-        #     print("Hallo welt")
-        #     # TODO anderer key als space?
 
     def _setup_questionnaire(self):
         self.ui.setFixedSize(650, 720)
