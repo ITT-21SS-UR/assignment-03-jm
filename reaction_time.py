@@ -3,7 +3,7 @@
 
 
 import sys
-from time import sleep
+import datetime
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtCore import QTimer, QEventLoop
 from PyQt5.QtWidgets import QStackedLayout
@@ -66,6 +66,10 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     __MAX_TRIALS = 20
     __COUNTDOWN_DURATION = 10  # seconds
     __PAUSE_DURATION = 60  # one minute pause
+    __df = pd.DataFrame(
+        columns=['timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'])
+    __press_key_condition_reached = False
+    __press_key_condition_reached_timestamp = None
 
     def __init__(self):
         super().__init__()
@@ -173,11 +177,17 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         except IndexError as ie:
             print(f"Tried to get current condition with a wrong index: \n{ie}")
 
+    def _condition_A_reached(self):
+        self.__press_key_condition_reached = True
+        self.__press_key_condition_reached_timestamp = datetime.datetime.now()
+        self.setStyleSheet("background-color: orange;")
+
     # TODO pressing space too early makes some problems at the moment (skips some trials)
     def _init_condition_A(self):
         timeout = get_random_time()
+        print("start condition a")
         # wait until changing the background color for a random time to make it less predictable
-        QTimer.singleShot(timeout, lambda: self.setStyleSheet("background-color: orange;"))
+        timer = QTimer.singleShot(timeout, lambda: self._condition_A_reached())
 
     def _init_condition_B(self):
         self._finish_loop = False
@@ -192,6 +202,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             color = get_random_color()
             self.setStyleSheet(f"background-color: {color};")
             if color == "blue":
+                self.__press_key_condition_reached = True
+                self.__press_key_condition_reached_timestamp = datetime.datetime.now()
                 break
 
     # TODO log too early clicks and time needed
@@ -208,7 +220,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self.setStyleSheet(f"background-color: white;")  # reset the window background color
             self._current_trial += 1
             # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
-            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS/2:
+            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS / 2:
                 self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
                                                  "in einer Minute geht es weiter!")
 
@@ -222,6 +234,21 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self._update_ui()
             self._start_task()
             # self.update()  # this triggers an async repaint of the widget (paintEvent() is called)
+        if self.__press_key_condition_reached:
+            self._log_trial_data(ev.key())
+
+    def _log_trial_data(self, input_key_code):
+        # 'timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'
+        self.__df = self.__df.append({'timestamp': datetime.datetime.now(), 'participantID': self._participant_id,
+                                      'condition': self._get_current_condition(),
+                                      'keyPressed': input_key_code,
+                                      'correctKeyWasPressed': input_key_code == QtCore.Qt.Key_Space,
+                                      'reactionTime': datetime.datetime.now() - self.__press_key_condition_reached_timestamp},
+                                     ignore_index=True)
+        self.__press_key_condition_reached = False
+        self.__press_key_condition_reached_timestamp = None
+        print(self.__df)
+        self.__df.to_csv('./new_data.csv', index=False)
 
     def _setup_questionnaire(self):
         self.ui.setFixedSize(650, 720)
