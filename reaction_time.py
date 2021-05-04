@@ -64,11 +64,12 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         "B": "Klicke die Leertaste so schnell wie möglich, wenn sich der Bildschirm-Hintergrund blau verfärbt."
     }
 
-    __MAX_TRIALS = 20
+    __MAX_TRIALS = 2
     __COUNTDOWN_DURATION = 10  # seconds
     __PAUSE_DURATION = 60  # one minute pause
-    __df = pd.DataFrame(
+    __study_data = pd.DataFrame(
         columns=['timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'])
+    __questionnaire_data = pd.DataFrame(columns=['timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType', 'keyboardUsage', 'hasEyeImpairment', 'eyeImpairment'])
     __press_key_condition_reached = False
     __press_key_condition_reached_timestamp = None
 
@@ -240,7 +241,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
     def _log_trial_data(self, input_key_code):
         # 'timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'
-        self.__df = self.__df.append({'timestamp': datetime.datetime.now(), 'participantID': self._participant_id,
+        self.__study_data = self.__study_data.append({'timestamp': datetime.datetime.now(), 'participantID': self._participant_id,
                                       'condition': self._get_current_condition(),
                                       'keyPressed': input_key_code,
                                       'correctKeyWasPressed': input_key_code == QtCore.Qt.Key_Space,
@@ -248,8 +249,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                                      ignore_index=True)
         self.__press_key_condition_reached = False
         self.__press_key_condition_reached_timestamp = None
-        print(self.__df)
-        self.__df.to_csv('./new_data.csv', index=False)
+        print(self.__study_data)
+        self.__study_data.to_csv('./participant_{}_data.csv'.format(self._participant_id), index=False)
 
     def _setup_questionnaire(self):
         self.ui.setFixedSize(650, 720)
@@ -257,8 +258,22 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
 
     def _save_answers(self):
-        # TODO connect to ui elements and log answers to file
-        #  -> validate before? or just allow all of them to be optional?
+        # timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType', 'keyboardUsage', 'hasEyeImpairment', 'e
+        participant_age = str(self.ui.age_selection.value())
+        participant_gender = str(self.ui.gender_selection.currentText())
+        participant_occupation = str(self.ui.occupation_input.text())
+        used_hand = str(self.ui.hand_selection.currentText())
+        keyboard_type = str(self.ui.keyboard_type_input.text())
+        keyboard_affinity = str(self.ui.keyboard_affinity_slider.value())
+        has_eye_impairment = str(self.ui.color_deficiency_selection.currentText())
+        eye_impairment = str(self.ui.color_deficiency_input.text())
+
+        self.__questionnaire_data = self.__questionnaire_data.append({'timestamp': datetime.datetime.now(),
+                                                                      'participantID': self._participant_id, 'age': participant_age,
+                                                                      'gender' : participant_gender, 'occupation': participant_occupation,
+                                                                      'usedHand': used_hand, 'keyboardType': keyboard_type, 'keyboardUsage': keyboard_affinity,
+                                                                      'hasEyeImpairment': has_eye_impairment, 'eyeImpairment': eye_impairment}, ignore_index=True)
+        self.__questionnaire_data.to_csv('./participant_{}_questionnaire.csv'.format(self._participant_id), index=False)
         self.close()
 
 
