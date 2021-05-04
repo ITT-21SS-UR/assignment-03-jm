@@ -9,6 +9,7 @@ from PyQt5.QtCore import QTimer, QEventLoop
 from PyQt5.QtWidgets import QStackedLayout
 import pandas as pd
 import random
+from enum import Enum
 
 CONFIG_FILE_PATH = "order_config.csv"
 
@@ -75,11 +76,11 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         super().__init__()
         self.ui = uic.loadUi("reaction_time.ui", self)
         self._setup_pages()
-
         self._current_trial = 0
-
         self.ui.setFixedSize(650, 400)  # set initial window size
         self.setFocusPolicy(QtCore.Qt.StrongFocus)  # necessary to capture click events!
+        self.StudyStates = Enum('StudyStates', 'StartScreen Trial Pause Questionnaire Done')
+        self.__current_status = self.StudyStates.StartScreen
 
         try:
             # get the passed command line arguments
@@ -88,7 +89,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
             # TODO delete me later:
             self.ui.debug_btn.clicked.connect(self._debug_show_questionnaire)
-
             self.ui.start_study_btn.clicked.connect(self._go_to_next_page)
             self.ui.start_study_btn.setFocusPolicy(QtCore.Qt.NoFocus)  # prevent auto-focus of the start button
         except ValueError as e:
@@ -111,6 +111,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         if self.stackedLayout.currentWidget() is self.secondPage:
             self._setup_study()
         elif self.stackedLayout.currentWidget() is self.thirdPage:
+            self.__current_status = self.StudyStates.Questionnaire            
             self._setup_questionnaire()
 
     # TODO: debug function to skip to questionnaire immediately; delete this later!
@@ -122,7 +123,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.ui.setFixedSize(650, 400)
         self.timer = QtCore.QTimer(self)  # init a qt Timer to show a countdown before every trial
         self.time_remaining = ReactionTimeStudy.__COUNTDOWN_DURATION
-
         self._update_ui()
         self._start_task()
 
@@ -136,7 +136,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.ui.countdown_label.show()
         self.ui.countdown_num.show()
         self._show_remaining_time()
-
+        self.__current_status = self.StudyStates.Pause 
         # start countdown
         self.timer.timeout.connect(self._on_countdown)
         self.timer.start(1000)  # every second
@@ -146,7 +146,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
         if self.time_remaining == 0:
             self._show_remaining_time()
-
+            self.__current_status = self.StudyStates.Trial
             # reset counters
             self.time_remaining = ReactionTimeStudy.__COUNTDOWN_DURATION
             self.ui.countdown_label.hide()
@@ -187,7 +187,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         timeout = get_random_time()
         print("start condition a")
         # wait until changing the background color for a random time to make it less predictable
-        timer = QTimer.singleShot(timeout, lambda: self._condition_A_reached())
+        QTimer.singleShot(timeout, lambda: self._condition_A_reached())
 
     def _init_condition_B(self):
         self._finish_loop = False
@@ -209,7 +209,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     # TODO log too early clicks and time needed
     def keyPressEvent(self, ev):
         if ev.key() == QtCore.Qt.Key_Space:
-            if not self.stackedLayout.currentWidget() is self.secondPage:
+            # if not self.stackedLayout.currentWidget() is self.secondPage:
+            if self.__current_status != self.StudyStates.Trial:
                 # if key pressed on the wrong page, do nothing
                 return
 
@@ -224,7 +225,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                 self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
                                                  "in einer Minute geht es weiter!")
 
-                # TODO unfortunately pressing space, simply skips this and the next trial :(
+                self.__current_status = self.StudyStates.Pause
                 _wait(ReactionTimeStudy.__PAUSE_DURATION * 1000)
             elif self._current_trial == 20:
                 # show questionnaire after 20 trials
@@ -253,6 +254,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     def _setup_questionnaire(self):
         self.ui.setFixedSize(650, 720)
         self.ui.finish_study_btn.clicked.connect(self._save_answers)
+
 
     def _save_answers(self):
         # TODO connect to ui elements and log answers to file
