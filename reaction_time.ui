@@ -50,7 +50,7 @@
     </size>
    </property>
    <property name="currentIndex">
-    <number>1</number>
+    <number>2</number>
    </property>
    <widget class="QWidget" name="intro">
     <property name="minimumSize">
@@ -288,7 +288,7 @@
       <string>sehr selten</string>
      </property>
     </widget>
-    <widget class="QSlider" name="keyboard_affinitiy_slider">
+    <widget class="QSlider" name="keyboard_affinity_slider">
      <property name="geometry">
       <rect>
        <x>30</x>
