@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
-
 import sys
 import time
 import os.path
@@ -12,21 +11,21 @@ import pandas as pd
 import random
 from enum import Enum
 
-CONFIG_FILE_PATH = "order_config.csv"
+'''We split the work on this assignment as follows:
+    We planned our study together.
+    Michael Meckl implemented the UI as well as the initial system for conducting the study.
+    Johannes Lorper implemented the logging, as well as the jupiter notebook for analysing the results.
+    In the end we both debugged and refactored the whole assignment together and wrote down our findings
+'''
+
 
 # random colors to cycle through
-random_colors = ["red", "blue", "green", "yellow", "orange"]  # "gray", "brown", "purple", "magenta", "beige"]
+random_colors = ["red", "blue", "green", "yellow", "orange"]
 
 
-def get_trial_order(participant_id: int) -> list[str]:
-    # order_df = pd.read_csv(CONFIG_FILE_PATH, sep=",")
-    # # get the correct trial order for the given participant id
-    # order_entry: pd.Series = order_df[order_df['participant_id'] == participant_id]['trial_order'].str.strip()
-    # trial_order: str = list(order_entry)[0]
-    # # split the trial order string into separate list entries: ['A B B A'] -> ['A', 'B', 'B', 'A']
-    # return trial_order.split()
+# creates a random condition/trial order and returns it as string list
+def get_trial_order() -> list[str]:
 
-    # TODO only pseudo-randomized but balanced latin square won't work here -> find a better way to randomize?
     conditions = ["A", "B"]
     repetitions = 10
     trials = list(repetitions * conditions)
@@ -94,7 +93,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         try:
             # get the passed command line arguments
             self._participant_id = int(sys.argv[1])
-            self._current_trial_order = get_trial_order(self._participant_id)
+            self._current_trial_order = get_trial_order()
 
             self.ui.start_study_btn.clicked.connect(self._go_to_next_page)
             self.ui.start_study_btn.setFocusPolicy(QtCore.Qt.NoFocus)  # prevent auto-focus of the start button
@@ -210,7 +209,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
     def _init_condition_a(self):
         timeout = get_random_time()
-        print("start condition a")
         # wait until changing the background color for a random time to make it less predictable
         QTimer.singleShot(timeout, lambda: self._condition_a_reached())
 
@@ -234,7 +232,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                 break
 
     def keyPressEvent(self, ev):
-        print(str(self.__current_status) + " " + str(self.__press_key_condition_reached))
         if self.__current_status is self.StudyStates.Trial:
 
             # if not self.stackedLayout.currentWidget() is self.secondPage:
