@@ -4,6 +4,7 @@
 
 import sys
 import time
+import os.path
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtCore import QTimer, QEventLoop
 from PyQt5.QtWidgets import QStackedLayout
@@ -14,7 +15,7 @@ from enum import Enum
 CONFIG_FILE_PATH = "order_config.csv"
 
 # 10 random colors to cycle through
-random_colors = ["red", "blue", "green", "yellow", "gray", "brown", "orange", "purple", "magenta", "beige"]
+random_colors = ["red", "blue", "green", "yellow", "gray"]#, "brown", "orange", "purple", "magenta", "beige"]
 
 
 def get_trial_order(participant_id: int) -> list[str]:
@@ -52,9 +53,9 @@ def get_random_color() -> str:
 
 # make the pyqt event loop wait for the given time without freezing everything (as with sleep(...)),
 # see https://stackoverflow.com/a/48039398
-def _wait(time: int):
+def _pause_task(pause_duration: int):
     loop = QEventLoop()
-    QTimer.singleShot(time * 1000, loop.quit)
+    QTimer.singleShot(pause_duration * 1000, loop.quit)
     loop.exec_()
 
 
@@ -64,12 +65,11 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         "B": "Klicke die Leertaste so schnell wie möglich, wenn sich der Bildschirm-Hintergrund blau verfärbt."
     }
 
-    __MAX_TRIALS = 20
-    __COUNTDOWN_DURATION = 10  # seconds
-    __PAUSE_DURATION = 60  # one minute pause
-    __study_data = pd.DataFrame(
-        columns=['timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'])
-    __questionnaire_data = pd.DataFrame(columns=['timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType', 'keyboardUsage', 'hasEyeImpairment', 'eyeImpairment'])
+    __TRIAL_COUNT = 4
+    __COUNTDOWN_DURATION = 2  # seconds
+    __PAUSE_DURATION = 2  # one minute pause
+    __STUDY_DATA_CSV_NAME = './reaction_time_log.csv'
+    __QUESTIONNAIRE_DATA_CSV_NAME = "./questionnaire_log"
     __press_key_condition_reached = False
     __press_key_condition_reached_timestamp = None
 
@@ -82,6 +82,10 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.setFocusPolicy(QtCore.Qt.StrongFocus)  # necessary to capture click events!
         self.StudyStates = Enum('StudyStates', 'StartScreen Trial Pause Questionnaire Done')
         self.__current_status = self.StudyStates.StartScreen
+        self.__study_data = self.__init_study_data()
+        self.__questionnaire_data = self.__init_questionnaire_data()
+        self.__wrong_key_presses = 0
+        self.__key_presses_before_condition = 0
 
         try:
             # get the passed command line arguments
@@ -94,6 +98,24 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self.ui.start_study_btn.setFocusPolicy(QtCore.Qt.NoFocus)  # prevent auto-focus of the start button
         except ValueError as e:
             print(f"The first command line parameter must be the participant id as an integer!\n{e}")
+
+    def __init_study_data(self):
+        if os.path.isfile(self.__STUDY_DATA_CSV_NAME):
+            study_data = pd.read_csv(self.__STUDY_DATA_CSV_NAME)
+        else:
+            study_data = pd.DataFrame(
+                columns=['timestamp', 'participantID', 'condition', 'wrongKeysPressedCount', 'conditionNotReachedPressesCount',
+                         'reactionTimeInMs'])
+        return study_data
+
+    def __init_questionnaire_data(self):
+        if os.path.isfile(self.__QUESTIONNAIRE_DATA_CSV_NAME):
+            study_data = pd.read_csv(self.__QUESTIONNAIRE_DATA_CSV_NAME)
+        else:
+            study_data = pd.DataFrame(
+                columns=['timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType',
+                 'keyboardUsage', 'hasEyeImpairment', 'eyeImpairment'])
+        return study_data
 
     def _setup_pages(self):
         # create a stacked layout and add all sub-pages
@@ -109,12 +131,10 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         # switch widget index to the next element in the stack (i.e. move to the next page)
         self.stackedLayout.setCurrentIndex(self.stackedLayout.currentIndex() + 1)
 
-       # while self.stackedLayout.currentWidget() is not self.thirdPage:
-        #    self.stackedLayout.setCurrentIndex(self.stackedLayout.currentIndex() + 1)
         if self.stackedLayout.currentWidget() is self.secondPage:
             self._setup_study()
         elif self.stackedLayout.currentWidget() is self.thirdPage:
-            self.__current_status = self.StudyStates.Questionnaire            
+            self.__current_status = self.StudyStates.Questionnaire
             self._setup_questionnaire()
 
     # TODO: debug function to skip to questionnaire immediately; delete this later!
@@ -139,7 +159,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.ui.countdown_label.show()
         self.ui.countdown_num.show()
         self._show_remaining_time()
-        self.__current_status = self.StudyStates.Pause 
+        self.__current_status = self.StudyStates.Pause
         # start countdown
         self.timer.timeout.connect(self._on_countdown)
         self.timer.start(1000)  # every second
@@ -158,14 +178,12 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             # disconnect this from the timer so it isn't called infinitely
             self.timer.timeout.disconnect(self._on_countdown)
 
-            # TODO log start after countdown finished
-
             # start current trial based on condition
             condition = self._get_current_condition()
             if condition == "A":
-                self._init_condition_A()
+                self._init_condition_a()
             else:
-                self._init_condition_B()
+                self._init_condition_b()
         else:
             self._show_remaining_time()
 
@@ -180,19 +198,19 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         except IndexError as ie:
             print(f"Tried to get current condition with a wrong index: \n{ie}")
 
-    def _condition_A_reached(self):
+    def _condition_a_reached(self):
         self.__press_key_condition_reached = True
         self.__press_key_condition_reached_timestamp = time.time()
         self.setStyleSheet("background-color: orange;")
 
     # TODO pressing space too early makes some problems at the moment (skips some trials)
-    def _init_condition_A(self):
+    def _init_condition_a(self):
         timeout = get_random_time()
         print("start condition a")
         # wait until changing the background color for a random time to make it less predictable
-        QTimer.singleShot(timeout, lambda: self._condition_A_reached())
+        QTimer.singleShot(timeout, lambda: self._condition_a_reached())
 
-    def _init_condition_B(self):
+    def _init_condition_b(self):
         self._finish_loop = False
         while True:
             # stop this loop if space is pressed before blue appeared otherwise it will run infinitely!
@@ -201,7 +219,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                 self._finish_loop = False  # reset so we can run this loop again
                 break
 
-            _wait(1)  # wait one second between
+            _pause_task(1)  # wait one second between
             color = get_random_color()
             self.setStyleSheet(f"background-color: {color};")
             if color == "blue":
@@ -211,53 +229,62 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
     # TODO log too early clicks and time needed
     def keyPressEvent(self, ev):
-        if ev.key() == QtCore.Qt.Key_Space:
+        print(str(self.__current_status) + " "+ str(self.__press_key_condition_reached))
+        if self.__current_status is self.StudyStates.Trial:
+
             # if not self.stackedLayout.currentWidget() is self.secondPage:
-            if self.__current_status != self.StudyStates.Trial:
+            if ev.key() == QtCore.Qt.Key_Space:
                 # if key pressed on the wrong page, do nothing
-                return
+                if self.__press_key_condition_reached:
 
-            if self._get_current_condition() == "B":
-                # we pressed space during the infinite loop; kill it in case the user clicked too early
-                self._finish_loop = True
+                    if self._get_current_condition() == "B":
+                        # we pressed space during the infinite loop; kill it in case the user clicked too early
+                        self._finish_loop = True
 
-            self.setStyleSheet(f"background-color: white;")  # reset the window background color
-            self._current_trial += 1
-            # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
-            if self._current_trial == ReactionTimeStudy.__MAX_TRIALS / 2:
-                self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
-                                                 "in einer Minute geht es weiter!")
+                    self.setStyleSheet(f"background-color: white;")  # reset the window background color
+                    self._current_trial += 1
+                    # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
+                    self._log_trial_data()
 
-                self.__current_status = self.StudyStates.Pause
-                _wait(ReactionTimeStudy.__PAUSE_DURATION * 1000)
-            elif self._current_trial == 20:
-                # show questionnaire after 20 trials
-                self._go_to_next_page()
-                return
+                    if self._current_trial == ReactionTimeStudy.__TRIAL_COUNT / 2:
+                        self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
+                                                         "in einer Minute geht es weiter!")
 
-            self._update_ui()
-            self._start_task()
-            # self.update()  # this triggers an async repaint of the widget (paintEvent() is called)
-        if self.__press_key_condition_reached:
-            self._log_trial_data(ev.key())
+                        self.__current_status = self.StudyStates.Pause
+                        _pause_task(ReactionTimeStudy.__PAUSE_DURATION)
+                    elif self._current_trial == ReactionTimeStudy.__TRIAL_COUNT:
+                        # show questionnaire after 20 trials
+                        self._go_to_next_page()
+                        return
 
-    def _log_trial_data(self, input_key_code):
+                    self._update_ui()
+                    self._start_task()
+                    # self.update()  # this triggers an async repaint of the widget (paintEvent() is called)
+                else:
+                    self.__key_presses_before_condition +=1
+                    return
+
+            else:
+                self.__wrong_key_presses += 1
+
+    def _log_trial_data(self):
         # 'timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'
         self.__study_data = self.__study_data.append({'timestamp': time.time(), 'participantID': self._participant_id,
-                                      'condition': self._get_current_condition(),
-                                      'keyPressed': input_key_code,
-                                      'correctKeyWasPressed': input_key_code == QtCore.Qt.Key_Space,
-                                      'reactionTime': time.time() - self.__press_key_condition_reached_timestamp},
-                                     ignore_index=True)
+                                                      'condition': self._get_current_condition(),
+                                                      'wrongKeysPressedCount': self.__wrong_key_presses,
+                                                      'conditionNotReachedPressesCount': self.__key_presses_before_condition,
+                                                      'reactionTimeInMs': time.time() - self.__press_key_condition_reached_timestamp},
+                                                     ignore_index=True)
         self.__press_key_condition_reached = False
         self.__press_key_condition_reached_timestamp = None
+        self.__key_presses_before_condition = 0
+        self.__wrong_key_presses = 0
         print(self.__study_data)
-        self.__study_data.to_csv('./participant_{}_data.csv'.format(self._participant_id), index=False)
+        self.__study_data.to_csv(self.__STUDY_DATA_CSV_NAME, index=False)
 
     def _setup_questionnaire(self):
         self.ui.setFixedSize(650, 720)
         self.ui.finish_study_btn.clicked.connect(self._save_answers)
-
 
     def _save_answers(self):
         # timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType', 'keyboardUsage', 'hasEyeImpairment', 'e
@@ -271,11 +298,17 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         eye_impairment = str(self.ui.color_deficiency_input.text())
 
         self.__questionnaire_data = self.__questionnaire_data.append({'timestamp': time.time(),
-                                                                      'participantID': self._participant_id, 'age': participant_age,
-                                                                      'gender' : participant_gender, 'occupation': participant_occupation,
-                                                                      'usedHand': used_hand, 'keyboardType': keyboard_type, 'keyboardUsage': keyboard_affinity,
-                                                                      'hasEyeImpairment': has_eye_impairment, 'eyeImpairment': eye_impairment}, ignore_index=True)
-        self.__questionnaire_data.to_csv('./participant_{}_questionnaire.csv'.format(self._participant_id), index=False)
+                                                                      'participantID': self._participant_id,
+                                                                      'age': participant_age,
+                                                                      'gender': participant_gender,
+                                                                      'occupation': participant_occupation,
+                                                                      'usedHand': used_hand,
+                                                                      'keyboardType': keyboard_type,
+                                                                      'keyboardUsage': keyboard_affinity,
+                                                                      'hasEyeImpairment': has_eye_impairment,
+                                                                      'eyeImpairment': eye_impairment},
+                                                                     ignore_index=True)
+        self.__questionnaire_data.to_csv(self.__QUESTIONNAIRE_DATA_CSV_NAME, index=False)
         self.close()
 
 
