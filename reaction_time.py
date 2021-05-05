@@ -65,20 +65,22 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         "B": "Klicke die Leertaste so schnell wie möglich, wenn sich der Bildschirm-Hintergrund blau verfärbt."
     }
 
-    __TRIAL_COUNT = 4
-    __COUNTDOWN_DURATION = 2  # seconds
-    __PAUSE_DURATION = 2  # one minute pause
+    __TRIAL_COUNT = 20
+    __COUNTDOWN_DURATION = 10  # seconds
+    __PAUSE_DURATION = 60  # one minute pause
     __STUDY_DATA_CSV_NAME = './reaction_time_log.csv'
     __QUESTIONNAIRE_DATA_CSV_NAME = "./questionnaire_log"
     __press_key_condition_reached = False
     __press_key_condition_reached_timestamp = None
+    __current_task_start_time = None
+    __current_task_time_till_condition_reached = None
 
     def __init__(self):
         super().__init__()
         self.ui = uic.loadUi("reaction_time.ui", self)
         self._setup_pages()
         self._current_trial = 0
-        self.ui.setFixedSize(650, 500)  # set initial window size
+        self.ui.setFixedSize(800, 750)  # set initial window size
         self.setFocusPolicy(QtCore.Qt.StrongFocus)  # necessary to capture click events!
 
         self.StudyStates = Enum('StudyStates', 'StartScreen Trial Pause Questionnaire Done')
@@ -107,7 +109,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             study_data = pd.read_csv(self.__STUDY_DATA_CSV_NAME)
         else:
             study_data = pd.DataFrame(
-                columns=['timestamp', 'participantID', 'condition', 'wrongKeysPressedCount',
+                columns=['timestamp', 'participantID', 'timeTillConditionInMs', 'condition', 'wrongKeysPressedCount',
                          'conditionNotReachedPressesCount',
                          'reactionTimeInMs'])
         return study_data
@@ -174,6 +176,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.time_remaining -= 1
 
         if self.time_remaining == 0:
+            ReactionTimeStudy.__current_task_start_time = time.time()
             self._show_remaining_time()
             self.__current_status = self.StudyStates.Trial
             # reset counters
@@ -205,6 +208,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             print(f"Tried to get current condition with a wrong index: \n{ie}")
 
     def _condition_a_reached(self):
+        ReactionTimeStudy.__current_task_time_till_condition_reached = time.time() - ReactionTimeStudy.__current_task_start_time
         self.__press_key_condition_reached = True
         self.__press_key_condition_reached_timestamp = time.time()
         random_color = get_random_color()
@@ -229,6 +233,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             color = get_random_color()
             self.setStyleSheet(f"background-color: {color};")
             if color == "blue":
+                ReactionTimeStudy.__current_task_time_till_condition_reached = time.time() - ReactionTimeStudy.__current_task_start_time
                 self.__press_key_condition_reached = True
                 self.__press_key_condition_reached_timestamp = time.time()
                 break
@@ -276,6 +281,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         # 'timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'
         self.__study_data = self.__study_data.append({'timestamp': time.time(), 'participantID': self._participant_id,
                                                       'condition': self._get_current_condition(),
+                                                      'timeTillConditionInMs': ReactionTimeStudy.__current_task_time_till_condition_reached,
                                                       'wrongKeysPressedCount': self.__wrong_key_presses,
                                                       'conditionNotReachedPressesCount': self.__key_presses_before_condition,
                                                       'reactionTimeInMs': time.time() - self.__press_key_condition_reached_timestamp},
@@ -284,6 +290,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.__press_key_condition_reached_timestamp = None
         self.__key_presses_before_condition = 0
         self.__wrong_key_presses = 0
+        ReactionTimeStudy.__current_task_time_till_condition_reached = None
+        ReactionTimeStudy.__current_task_start_time = None
         print(self.__study_data)
         self.__study_data.to_csv(self.__STUDY_DATA_CSV_NAME, index=False)
 
