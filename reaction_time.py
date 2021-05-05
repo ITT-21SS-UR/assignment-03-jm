@@ -207,7 +207,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     def _condition_a_reached(self):
         self.__press_key_condition_reached = True
         self.__press_key_condition_reached_timestamp = time.time()
-        self.setStyleSheet("background-color: orange;")
+        random_color = get_random_color()
+        self.setStyleSheet(f"background-color: {random_color};")
 
     def _init_condition_a(self):
         timeout = get_random_time()
