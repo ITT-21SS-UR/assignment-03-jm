@@ -3,7 +3,7 @@
 
 
 import sys
-import datetime
+import time
 from PyQt5 import QtWidgets, QtCore, uic
 from PyQt5.QtCore import QTimer, QEventLoop
 from PyQt5.QtWidgets import QStackedLayout
@@ -64,7 +64,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         "B": "Klicke die Leertaste so schnell wie möglich, wenn sich der Bildschirm-Hintergrund blau verfärbt."
     }
 
-    __MAX_TRIALS = 2
+    __MAX_TRIALS = 20
     __COUNTDOWN_DURATION = 10  # seconds
     __PAUSE_DURATION = 60  # one minute pause
     __study_data = pd.DataFrame(
@@ -180,7 +180,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
     def _condition_A_reached(self):
         self.__press_key_condition_reached = True
-        self.__press_key_condition_reached_timestamp = datetime.datetime.now()
+        self.__press_key_condition_reached_timestamp = time.time()
         self.setStyleSheet("background-color: orange;")
 
     # TODO pressing space too early makes some problems at the moment (skips some trials)
@@ -204,7 +204,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self.setStyleSheet(f"background-color: {color};")
             if color == "blue":
                 self.__press_key_condition_reached = True
-                self.__press_key_condition_reached_timestamp = datetime.datetime.now()
+                self.__press_key_condition_reached_timestamp = time.time()
                 break
 
     # TODO log too early clicks and time needed
@@ -241,11 +241,11 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
     def _log_trial_data(self, input_key_code):
         # 'timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'
-        self.__study_data = self.__study_data.append({'timestamp': datetime.datetime.now(), 'participantID': self._participant_id,
+        self.__study_data = self.__study_data.append({'timestamp': time.time(), 'participantID': self._participant_id,
                                       'condition': self._get_current_condition(),
                                       'keyPressed': input_key_code,
                                       'correctKeyWasPressed': input_key_code == QtCore.Qt.Key_Space,
-                                      'reactionTime': datetime.datetime.now() - self.__press_key_condition_reached_timestamp},
+                                      'reactionTime': time.time() - self.__press_key_condition_reached_timestamp},
                                      ignore_index=True)
         self.__press_key_condition_reached = False
         self.__press_key_condition_reached_timestamp = None
@@ -268,7 +268,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         has_eye_impairment = str(self.ui.color_deficiency_selection.currentText())
         eye_impairment = str(self.ui.color_deficiency_input.text())
 
-        self.__questionnaire_data = self.__questionnaire_data.append({'timestamp': datetime.datetime.now(),
+        self.__questionnaire_data = self.__questionnaire_data.append({'timestamp': time.time(),
                                                                       'participantID': self._participant_id, 'age': participant_age,
                                                                       'gender' : participant_gender, 'occupation': participant_occupation,
                                                                       'usedHand': used_hand, 'keyboardType': keyboard_type, 'keyboardUsage': keyboard_affinity,
