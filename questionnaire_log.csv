@@ -1,4 +1,0 @@
-timestamp,participantID,age,gender,occupation,usedHand,keyboardType,keyboardUsage,hasEyeImpairment,eyeImpairment
-1620230292.6996605,1,22,Männlich,Student,Rechte Hand (starke Hand),Laptop-Tastatur,7,Nein,
-1620230540.7375288,2,22,Männlich,Student,Rechte Hand (starke Hand),Laptop-Tastatur,6,Nein,
-1620230795.219827,3,22,Männlich,Student - Medieninformatik,Linke Hand (schwache Hand),Laptop,7,Nein,

@@ -16,7 +16,7 @@ Overall, we used a within-subjects design with two conditions and ten repetition
 
 ## Participants
 
-Unfortunately, due to time restrictions, the researches had to conduct the study themselves, each 3 times, resulting in 6 participations. Therefore, both participants were male and the mean age of the participants was **TODO** (sd = ). In a more optimal setting, the study would have been conducted with a lot more participants (n > 30) from different social and ethnic backgrounds as well as different age groups to get more generalizable results. It would also be useful to acquire participants with different levels of technological affinity, especially related to the use of keyboards.
+The study was conducted by 9 participants ranging in age from 22 to 31 years (m = 26,67, sd = 3,68). 6 participants were male and 3 female. In a more optimal setting, the study would have been conducted with a lot more participants (n > 30) from different social and ethnic backgrounds as well as different age groups to get more generalizable results. It would also be useful to acquire participants with different levels of technological affinity, especially related to the use of keyboards.
 
 As the study requires reacting to a changing color as stimulus, only participants without a color vision deficiency (e.g. red green color blindness) should take part in the experiment.
 
@@ -24,10 +24,9 @@ As the study requires reacting to a changing color as stimulus, only participant
 
 ## Preliminary Results
 
-As the second condition required an additional decision process after each color was shown, we assumed that the reaction time would be slower for this condition as it required more mental effort than the first (**TODO** also more errors!). Therefore, our alternative hypothesis was that the reaction time of our participants were slower in the condition where they should only press the space key if the background color changed to blue while our null hypothesis stated that no significant differences in the reaction times for both conditions would be found.
+As the second condition required an additional decision process after each color was shown, we assumed that the reaction time would be slower for this condition as it required more mental effort than the first. Therefore, our alternative hypothesis was that the reaction time of our participants were slower in the condition where they should only press the space key if the background color changed to blue while our null hypothesis stated that no significant differences in the reaction times for both conditions would be found.
 
-**TODO** intial results ??
-
+However, our results show that there was no significant difference in the participant's reaction times between the two conditions. Even though the second condition required an additional decision process it does not influence the reaction time as much as we thought it would.
 
 
 <br>
