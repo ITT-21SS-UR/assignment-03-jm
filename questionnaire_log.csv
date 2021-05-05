@@ -1,0 +1,8 @@
+timestamp,participantID,age,gender,occupation,usedHand,keyboardType,keyboardUsage,hasEyeImpairment,eyeImpairment
+1620230292.6996605,1,22,Männlich,Student,Rechte Hand (starke Hand),Laptop-Tastatur,7,Nein,
+1620230540.7375288,2,22,Männlich,Student,Rechte Hand (starke Hand),Laptop-Tastatur,6,Nein,
+1620230795.219827,3,22,Männlich,Student - Medieninformatik,Linke Hand (schwache Hand),Laptop,7,Nein,
+1620231655.1985533,4,27,Männlich,Student,Rechte Hand (starke Hand),Mechanisch,7,Nein,
+1620232547.7418485,5,31,Weiblich,Studentin,Rechte Hand (starke Hand),,4,Nein,
+1620233059.2601626,6,27,Männlich,Student,Rechte Hand (starke Hand),Mechanisch,7,Nein,
+1620235708.4644692,7,27,Männlich,Student,Rechte Hand (starke Hand),Mechanisch,7,Nein,
