@@ -1,0 +1,6 @@
+A restriction of our study is the fact that we took part in the study ourselves besides one actual participant, which influences the results quite a bit.
+
+While conducting the study we also noticed that the automatic setup pipeline was too simple and could have been better if a GUI would have been added with the option
+to decide if one wants to stop after one experiment run or go on with the next.
+Besides that, we noticed that the current task could have been highlighted more prominently during each trial, especially the difference between the two conditions, to make it easier for the participants to adjust to the next task.
+Additionally, a countdown could have been shown during the 30 second pause after the 10th trial to make it easier for the participants to see how long they still have.
