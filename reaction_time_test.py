@@ -67,7 +67,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     __TRIAL_COUNT = 20
     __COUNTDOWN_DURATION = 5  # seconds
     __PAUSE_DURATION = 30  # half a minute pause
-    __STUDY_DATA_CSV_NAME = './reaction_time_log.csv'
+    __STUDY_DATA_CSV_NAME = './reaction_time_results.csv'
     __QUESTIONNAIRE_DATA_CSV_NAME = "./questionnaire_log.csv"
     __press_key_condition_reached = False
     __press_key_condition_reached_timestamp = None
