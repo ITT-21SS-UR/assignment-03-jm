@@ -14,8 +14,8 @@ from enum import Enum
 
 CONFIG_FILE_PATH = "order_config.csv"
 
-# 10 random colors to cycle through
-random_colors = ["red", "blue", "green", "yellow", "gray"]#, "brown", "orange", "purple", "magenta", "beige"]
+# random colors to cycle through
+random_colors = ["red", "blue", "green", "yellow", "gray", "brown", "orange"]  # "purple", "magenta", "beige"]
 
 
 def get_trial_order(participant_id: int) -> list[str]:
@@ -78,10 +78,12 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.ui = uic.loadUi("reaction_time.ui", self)
         self._setup_pages()
         self._current_trial = 0
-        self.ui.setFixedSize(650, 400)  # set initial window size
+        self.ui.setFixedSize(650, 500)  # set initial window size
         self.setFocusPolicy(QtCore.Qt.StrongFocus)  # necessary to capture click events!
+
         self.StudyStates = Enum('StudyStates', 'StartScreen Trial Pause Questionnaire Done')
         self.__current_status = self.StudyStates.StartScreen
+
         self.__study_data = self.__init_study_data()
         self.__questionnaire_data = self.__init_questionnaire_data()
         self.__wrong_key_presses = 0
@@ -100,11 +102,13 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             print(f"The first command line parameter must be the participant id as an integer!\n{e}")
 
     def __init_study_data(self):
+        # check if the file already exists
         if os.path.isfile(self.__STUDY_DATA_CSV_NAME):
             study_data = pd.read_csv(self.__STUDY_DATA_CSV_NAME)
         else:
             study_data = pd.DataFrame(
-                columns=['timestamp', 'participantID', 'condition', 'wrongKeysPressedCount', 'conditionNotReachedPressesCount',
+                columns=['timestamp', 'participantID', 'condition', 'wrongKeysPressedCount',
+                         'conditionNotReachedPressesCount',
                          'reactionTimeInMs'])
         return study_data
 
@@ -114,7 +118,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         else:
             study_data = pd.DataFrame(
                 columns=['timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType',
-                 'keyboardUsage', 'hasEyeImpairment', 'eyeImpairment'])
+                         'keyboardUsage', 'hasEyeImpairment', 'eyeImpairment'])
         return study_data
 
     def _setup_pages(self):
@@ -143,7 +147,9 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self._setup_questionnaire()
 
     def _setup_study(self):
-        self.ui.setFixedSize(650, 400)
+        self.ui.setFixedSize(650, 500)
+        self.ui.max_trial_number.setText(str(ReactionTimeStudy.__TRIAL_COUNT))  # set the max number of trials
+
         self.timer = QtCore.QTimer(self)  # init a qt Timer to show a countdown before every trial
         self.time_remaining = ReactionTimeStudy.__COUNTDOWN_DURATION
         self._update_ui()
@@ -203,7 +209,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.__press_key_condition_reached_timestamp = time.time()
         self.setStyleSheet("background-color: orange;")
 
-    # TODO pressing space too early makes some problems at the moment (skips some trials)
     def _init_condition_a(self):
         timeout = get_random_time()
         print("start condition a")
@@ -227,9 +232,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                 self.__press_key_condition_reached_timestamp = time.time()
                 break
 
-    # TODO log too early clicks and time needed
     def keyPressEvent(self, ev):
-        print(str(self.__current_status) + " "+ str(self.__press_key_condition_reached))
+        print(str(self.__current_status) + " " + str(self.__press_key_condition_reached))
         if self.__current_status is self.StudyStates.Trial:
 
             # if not self.stackedLayout.currentWidget() is self.secondPage:
@@ -253,7 +257,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                         self.__current_status = self.StudyStates.Pause
                         _pause_task(ReactionTimeStudy.__PAUSE_DURATION)
                     elif self._current_trial == ReactionTimeStudy.__TRIAL_COUNT:
-                        # show questionnaire after 20 trials
+                        # show questionnaire after user finished trials
                         self._go_to_next_page()
                         return
 
@@ -261,7 +265,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                     self._start_task()
                     # self.update()  # this triggers an async repaint of the widget (paintEvent() is called)
                 else:
-                    self.__key_presses_before_condition +=1
+                    self.__key_presses_before_condition += 1
                     return
 
             else:
@@ -283,7 +287,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.__study_data.to_csv(self.__STUDY_DATA_CSV_NAME, index=False)
 
     def _setup_questionnaire(self):
-        self.ui.setFixedSize(650, 720)
+        self.ui.setFixedSize(700, 720)
         self.ui.finish_study_btn.clicked.connect(self._save_answers)
 
     def _save_answers(self):
