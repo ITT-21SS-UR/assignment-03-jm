@@ -72,7 +72,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     __QUESTIONNAIRE_DATA_CSV_NAME = "./questionnaire_log.csv"
     __press_key_condition_reached = False
     __press_key_condition_reached_timestamp = None
-    __current_task_start_time = None
+    __task_start_time = None
     __current_task_time_till_condition_reached = None
 
     def __init__(self):
@@ -169,7 +169,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.time_remaining -= 1
 
         if self.time_remaining == 0:
-            ReactionTimeStudy.__current_task_start_time = time.time()
+            ReactionTimeStudy.__task_start_time = time.time()
             self._show_remaining_time()
             self.__current_status = self.StudyStates.Trial
             # reset counters
@@ -201,7 +201,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             print(f"Tried to get current condition with a wrong index: \n{ie}")
 
     def _condition_a_reached(self):
-        ReactionTimeStudy.__current_task_time_till_condition_reached = time.time() - ReactionTimeStudy.__current_task_start_time
+        ReactionTimeStudy.__current_task_time_till_condition_reached = time.time() - \
+                                                                       ReactionTimeStudy.__task_start_time
         self.__press_key_condition_reached = True
         self.__press_key_condition_reached_timestamp = time.time()
         random_color = get_random_color()
@@ -226,7 +227,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             color = get_random_color()
             self.setStyleSheet(f"background-color: {color};")
             if color == "blue":
-                ReactionTimeStudy.__current_task_time_till_condition_reached = time.time() - ReactionTimeStudy.__current_task_start_time
+                ReactionTimeStudy.__current_task_time_till_condition_reached = time.time() - \
+                                                                               ReactionTimeStudy.__task_start_time
                 self.__press_key_condition_reached = True
                 self.__press_key_condition_reached_timestamp = time.time()
                 break
@@ -245,10 +247,10 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                         self._finish_loop = True
 
                     self.setStyleSheet(f"background-color: white;")  # reset the window background color
-                    self._current_trial += 1
-                    # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
                     self._log_trial_data()
+                    self._current_trial += 1
 
+                    # check after ech trial if halfway there (after 10th trial) and if yes, make a short pause
                     if self._current_trial == ReactionTimeStudy.__TRIAL_COUNT / 2:
                         self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
                                                          "in 30 Sekunden geht es weiter!")
@@ -271,20 +273,22 @@ class ReactionTimeStudy(QtWidgets.QWidget):
                 self.__wrong_key_presses += 1
 
     def _log_trial_data(self):
-        # 'timestamp', 'participantID', 'condition', 'keyPressed', 'correctKeyWasPressed', 'reactionTime'
-        self.__study_data = self.__study_data.append({'timestamp': time.time(), 'participantID': self._participant_id,
-                                                      'condition': self._get_current_condition(),
-                                                      'timeTillConditionInMs': ReactionTimeStudy.__current_task_time_till_condition_reached,
-                                                      'wrongKeysPressedCount': self.__wrong_key_presses,
-                                                      'conditionNotReachedPressesCount': self.__key_presses_before_condition,
-                                                      'reactionTimeInMs': time.time() - self.__press_key_condition_reached_timestamp},
-                                                     ignore_index=True)
+        self.__study_data = self.__study_data.append({
+            'timestamp': time.time(),
+            'participantID': self._participant_id,
+            'condition': self._get_current_condition(),
+            'timeTillConditionInMs': ReactionTimeStudy.__current_task_time_till_condition_reached,
+            'wrongKeysPressedCount': self.__wrong_key_presses,
+            'conditionNotReachedPressesCount': self.__key_presses_before_condition,
+            'reactionTimeInMs': time.time() - self.__press_key_condition_reached_timestamp
+        }, ignore_index=True)
+
         self.__press_key_condition_reached = False
         self.__press_key_condition_reached_timestamp = None
         self.__key_presses_before_condition = 0
         self.__wrong_key_presses = 0
         ReactionTimeStudy.__current_task_time_till_condition_reached = None
-        ReactionTimeStudy.__current_task_start_time = None
+        ReactionTimeStudy.__task_start_time = None
         print(self.__study_data)
         self.__study_data.to_csv(self.__STUDY_DATA_CSV_NAME, index=False)
 
@@ -293,7 +297,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         self.ui.finish_study_btn.clicked.connect(self._save_answers)
 
     def _save_answers(self):
-        # timestamp', 'participantID', 'age', 'gender', 'occupation', 'usedHand', 'keyboardType', 'keyboardUsage', 'hasEyeImpairment', 'e
         participant_age = str(self.ui.age_selection.value())
         participant_gender = str(self.ui.gender_selection.currentText())
         participant_occupation = str(self.ui.occupation_input.text())
