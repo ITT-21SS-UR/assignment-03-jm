@@ -109,6 +109,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         # switch widget index to the next element in the stack (i.e. move to the next page)
         self.stackedLayout.setCurrentIndex(self.stackedLayout.currentIndex() + 1)
 
+       # while self.stackedLayout.currentWidget() is not self.thirdPage:
+        #    self.stackedLayout.setCurrentIndex(self.stackedLayout.currentIndex() + 1)
         if self.stackedLayout.currentWidget() is self.secondPage:
             self._setup_study()
         elif self.stackedLayout.currentWidget() is self.thirdPage:
