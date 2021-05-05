@@ -66,8 +66,8 @@ class ReactionTimeStudy(QtWidgets.QWidget):
     }
 
     __TRIAL_COUNT = 20
-    __COUNTDOWN_DURATION = 10  # seconds
-    __PAUSE_DURATION = 60  # one minute pause
+    __COUNTDOWN_DURATION = 5  # seconds
+    __PAUSE_DURATION = 30  # half a minute pause
     __STUDY_DATA_CSV_NAME = './reaction_time_log.csv'
     __QUESTIONNAIRE_DATA_CSV_NAME = "./questionnaire_log"
     __press_key_condition_reached = False
@@ -96,8 +96,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
             self._participant_id = int(sys.argv[1])
             self._current_trial_order = get_trial_order(self._participant_id)
 
-            # TODO delete me later:
-            self.ui.debug_btn.clicked.connect(self._debug_show_questionnaire)
             self.ui.start_study_btn.clicked.connect(self._go_to_next_page)
             self.ui.start_study_btn.setFocusPolicy(QtCore.Qt.NoFocus)  # prevent auto-focus of the start button
         except ValueError as e:
@@ -142,11 +140,6 @@ class ReactionTimeStudy(QtWidgets.QWidget):
         elif self.stackedLayout.currentWidget() is self.thirdPage:
             self.__current_status = self.StudyStates.Questionnaire
             self._setup_questionnaire()
-
-    # TODO: debug function to skip to questionnaire immediately; delete this later!
-    def _debug_show_questionnaire(self):
-        self.stackedLayout.setCurrentIndex(2)
-        self._setup_questionnaire()
 
     def _setup_study(self):
         self.ui.setFixedSize(650, 500)
@@ -258,7 +251,7 @@ class ReactionTimeStudy(QtWidgets.QWidget):
 
                     if self._current_trial == ReactionTimeStudy.__TRIAL_COUNT / 2:
                         self.ui.task_description.setText("Du hast die Hälfte geschafft! Ruhe dich kurz aus, "
-                                                         "in einer Minute geht es weiter!")
+                                                         "in 30 Sekunden geht es weiter!")
 
                         self.__current_status = self.StudyStates.Pause
                         _pause_task(ReactionTimeStudy.__PAUSE_DURATION)
