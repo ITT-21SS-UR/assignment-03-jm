@@ -1,0 +1,29 @@
+1. 
+Hornbæk says that self reported task performance (e.g. through questionnaires) can be unreliable or hard to use in different scenarios.
+Participants answers could be influenced by a wide range of unwanted variables. While this is also true for objective measuring, objective measuring
+gives better control over this variables.
+In a study he found that self-reported perception did not correlate with actual measured outcomes.  
+
+2.
+A downside to research hypotheses is that they can drive the researcher towards a "hunting bias"; he then wants to prove his theories and 
+probably ignores or oversees evidence that would force him to reject them. Hypotheses can also blind us from seeig other interessing findings,
+so researchers should allways have an open mind when looking at their data. Furthermore there are more studies published that confirmed the hypothesis than
+rejected it which may results from people not publishing studies with rejected ones. This could obstruct the progress in research because of the confirmation
+bias it can cause. There are also many advantages when using hypotheses in studies. First of all, the use of them is strictly tied to the empiric theory. 
+Since it is suggested to create a hypothesis before conducting a study, it can help the researcher to build a good design for his study. They can help to use earlier
+work on a similar subject by sticking close to their hypothesis and only changing some variables. Hypotheses help to focus on research questions, and can help to 
+define a clear result for a study.
+To summarize: hypotheses are a great tool, but as allways: bring a open mind!
+
+3.
+It some examples it can be acceptable. They main goal for searching participants should allways be to find people with the characteristics necessary to adress
+the research question.
+As long as the characteristics of the participants are able to give a generalizable result, you are good to go.
+As advantage of informatic students you could name their gerneral tech affinity, which is searched for as characteristic in some studies.
+Using such a clear defined participant group can also be a disadvantage, since they propaply have many traits in common, and that could break the gernalizability
+of the studies results.
+For example, it could be problematic to only use informatics student to make a user study for a new mobile phone ui design that aims to be useable by everyone.
+Most likely informatics students will have a higher understanding of controlling the interface than the average user, and thus do not build a generalizable sample.
+It could be ok to only use informatic students if you want to conduct a user study about a new mobile phone ui design which only targets people with a high tech affinity. 
+
+
