@@ -16,7 +16,7 @@ Overall, we used a within-subjects design with two conditions and ten repetition
 
 ## Participants
 
-The study was conducted by 9 participants ranging in age from 22 to 31 years (m = 26,67, sd = 3,68). 6 participants were male and 3 female. In a more optimal setting, the study would have been conducted with a lot more participants (n > 30) from different social and ethnic backgrounds as well as different age groups to get more generalizable results. It would also be useful to acquire participants with different levels of technological affinity, especially related to the use of keyboards.
+The study was conducted by 7 participants ranging in age from 22 to 31 years (m = 25,43, sd = 3,25). 6 participants were male and 1 female. In a more optimal setting, the study would have been conducted with a lot more participants (n > 30) from different social and ethnic backgrounds as well as different age groups to get more generalizable results. It would also be useful to acquire participants with different levels of technological affinity, especially related to the use of keyboards.
 
 As the study requires reacting to a changing color as stimulus, only participants without a color vision deficiency (e.g. red green color blindness) should take part in the experiment.
 
