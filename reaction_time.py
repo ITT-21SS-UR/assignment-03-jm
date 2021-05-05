@@ -15,7 +15,7 @@ from enum import Enum
 CONFIG_FILE_PATH = "order_config.csv"
 
 # random colors to cycle through
-random_colors = ["red", "blue", "green", "yellow", "gray", "brown", "orange"]  # "purple", "magenta", "beige"]
+random_colors = ["red", "blue", "green", "yellow", "orange"]  # "gray", "brown", "purple", "magenta", "beige"]
 
 
 def get_trial_order(participant_id: int) -> list[str]:
