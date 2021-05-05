@@ -1,0 +1,16 @@
+a) Direct pointing devices can be simpler and easier to use compared to indirect pointing devices because you don't need any additional device to interact with the screen (even though this applies only to touch interaction and not all direct pointing devices). Because you can just use your fingers to interact directly with the application it feels more natural too.
+Direct pointing devices in general may also be less cognitive challenging and more intuitive than indirect pointing devices because the brain doesn't have to translate the movement of the device to the movement of the cursor on the screen.
+
+An example where a direct pointing devices would make no sense, would be any application which requires the user to hover over a certain area as this is not possible with direct interaction.
+
+
+b) According to the Wikipedia article [2] "Shift" could be classified as a direct, absolute (consistent mapping of input and output space because of touch interaction), isometric (the callouts appear only when pressing something on the touchscreen), position-control, translational input technique with 3 degrees of freedom (x, y position and pressure) and 3 states (out of range, tracking and dragging).
+As it is a touch-based interaction it is similar to the classification of touch screens in the Wikipedia article but because it also allows the user to adjust or correct the selection after pressing on the touchscreen there is also a form of tracking state in addition to dragging during this phase (hence 3 states).
+
+c) The size of the display of the IPAQ PDA used in the study was 550 × 730mm (with a resolution of 240 × 320px) [1].
+
+
+
+
+[1] Vogel, D., & Baudisch, P. (2007, April). Shift: a technique for operating pen-based interfaces using touch. In Proceedings of the SIGCHI conference on Human factors in computing systems (pp. 657-666).
+[2] Wikipedia contributors. (2021, April 17). Pointing device. In Wikipedia, The Free Encyclopedia. Retrieved May 4, 2021, from https://en.wikipedia.org/w/index.php?title=Pointing_device.
